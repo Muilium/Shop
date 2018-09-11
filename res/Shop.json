@@ -1,0 +1,41 @@
+{
+  "users": [
+    {
+      "name": "Sanya",
+      "surname": "Sovetskiy",
+      "balance": 5400
+    }
+  ],
+  "items": [
+    {
+      "name": "Potato",
+      "id": "ID27814",
+      "price": 520,
+      "remaining": 14
+    },
+    {
+      "name": "Banana",
+      "id": "ID78190",
+      "price": 120,
+      "remaining": 25
+    },
+    {
+      "name": "Milk",
+      "id": "ID51286",
+      "price": 230,
+      "remaining": 17
+    },
+    {
+      "name": "Huge Dildo",
+      "id": "ID84023",
+      "price": 1199,
+      "remaining": 3
+    },
+    {
+      "name": "Eggs",
+      "id": "ID46713",
+      "price": 80,
+      "remaining": 22
+    }
+  ]
+}
