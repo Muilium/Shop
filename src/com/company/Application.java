@@ -9,6 +9,7 @@ import java.beans.PropertyChangeListener;
 public class Application extends JFrame {
 
     JTable table;
+    JTextField currentBalance;
 
     public Application()
     {
@@ -18,12 +19,9 @@ public class Application extends JFrame {
 
         Shop shop = new Shop();
         shop.loadFromJson("Shop.json");
+        shop.setCurrentUser(shop.getUsers().get(0));
 
         Object[][] data = new Object[shop.getItems().size()][5];
-
-        /*JButton button = new JButton("Buy");
-        ActionListener actionListener = new BuyAction();
-        button.addActionListener(actionListener);*/
 
         Action action = new Action() {
             @Override
@@ -58,7 +56,16 @@ public class Application extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("It works!");
+                if(shop.getCurrentUser().getBalance() >= (int)table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 2))
+                    if((int)table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 3) > 0) {
+                        table.getModel().setValueAt((int) table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 3) - 1, Integer.valueOf(e.getActionCommand()), 3);
+                        shop.getCurrentUser().setBalance(shop.getCurrentUser().getBalance() - (int)table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 2));
+                        currentBalance.setText(String.valueOf(shop.getCurrentUser().getBalance()));
+                    }
+                    else
+                        System.out.println("Out of items!");
+                    else System.out.println("Out of money!");
+                System.out.println(shop.getCurrentUser().getBalance());
             }
         };
 
@@ -77,7 +84,7 @@ public class Application extends JFrame {
 
         JFrame frame = new JFrame("Shop");
         frame.getContentPane().setLayout(new FlowLayout());
-        frame.setSize(400, 120);
+        frame.setSize(400, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
@@ -88,7 +95,15 @@ public class Application extends JFrame {
         //table.add(button);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setPreferredScrollableViewportSize(new Dimension(450, 110));
+
+        JLabel balance = new JLabel("Balance: ");
+        currentBalance = new JTextField(8);
+        currentBalance.setText(String.valueOf(shop.getCurrentUser().getBalance()));
+
         frame.getContentPane().add(table);
+        frame.getContentPane().add(balance);
+        frame.getContentPane().add(currentBalance);
+
         //frame.getContentPane().add(button);
         frame.setVisible(true);
     }

@@ -48,6 +48,7 @@ public class ButtonColumn extends AbstractCellEditor
         this.action = action;
 
         renderButton = new JButton();
+        renderButton.setActionCommand(String.valueOf(this.table.getSelectedRow()));
         editButton = new JButton();
         editButton.setFocusPainted( false );
         editButton.addActionListener( this );
