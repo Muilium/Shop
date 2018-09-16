@@ -10,10 +10,14 @@ public class Application extends JFrame {
 
     JTable table;
     JTextField currentBalance;
+    JTextField nameEntered;
+    JTextField surnameEntered;
 
     public Application()
     {
         super("Shop");
+
+        JFrame frame = new JFrame("Shop");
 
         setLayout(new FlowLayout());
 
@@ -56,19 +60,23 @@ public class Application extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(shop.getCurrentUser().getBalance() >= (int)table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 2))
-                    if((int)table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 3) > 0) {
-                        table.getModel().setValueAt((int) table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 3) - 1, Integer.valueOf(e.getActionCommand()), 3);
-                        shop.getCurrentUser().setBalance(shop.getCurrentUser().getBalance() - (int)table.getModel().getValueAt(Integer.valueOf(e.getActionCommand()), 2));
-                        currentBalance.setText(String.valueOf(shop.getCurrentUser().getBalance()));
-                    }
+                int row = Integer.valueOf(e.getActionCommand());
+                int balance = shop.getCurrentUser().getBalance();
+                int itemCost = shop.getItems().get(row).getPrice();
+                int remaining = shop.getItems().get(row).getRemaining();
+                if(shop.buyItem(row))
+                {
+                    table.getModel().setValueAt(remaining - 1, row , 3);
+                    currentBalance.setText(String.valueOf(balance - itemCost));
+                }
+                else {
+                    if(balance < itemCost)
+                        JOptionPane.showMessageDialog(null, "Not enough money!");
                     else
-                        System.out.println("Out of items!");
-                    else System.out.println("Out of money!");
-                System.out.println(shop.getCurrentUser().getBalance());
+                        JOptionPane.showMessageDialog(null, "Out of items!");
+                }
             }
         };
-
 
 
         for(int i = 0; i < shop.getItems().size(); i++)
@@ -80,19 +88,55 @@ public class Application extends JFrame {
             data[i][4] = "Buy";
         }
 
+        JFrame loginFrame = new JFrame("Log in");
+        loginFrame.getContentPane().setLayout(new FlowLayout());
+        loginFrame.setSize(200, 150);
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JLabel name = new JLabel("Name:       ");
+        JLabel surname = new JLabel("Surname: ");
+        JButton logIn = new JButton("Log In");
+        logIn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = nameEntered.getText();
+                String surname = surnameEntered.getText();
+                boolean userFound = false;
+
+                for(int i = 0; i < shop.getUsers().size(); i++)
+                    if(name.equals( shop.getUsers().get(i).getName()) && surname.equals( shop.getUsers().get(i).getSurname())) {
+                        userFound = true;
+                        shop.setCurrentUser(shop.getUsers().get(i));
+                        loginFrame.setVisible(false);
+                        frame.setVisible(true);
+                        break;
+                    }
+                if(!userFound)
+                {
+                    JOptionPane.showMessageDialog(null, "User is not found!");
+                }
+            }
+        });
+        nameEntered = new JTextField(10);
+        surnameEntered = new JTextField(10);
+
+        loginFrame.add(name);
+        loginFrame.add(nameEntered);
+        loginFrame.add(surname);
+        loginFrame.add(surnameEntered);
+        loginFrame.add(logIn);
+        loginFrame.setVisible(true);
 
 
-        JFrame frame = new JFrame("Shop");
         frame.getContentPane().setLayout(new FlowLayout());
-        frame.setSize(400, 200);
+        frame.setSize(500, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(false);
 
 
-        String[] columnNames = {"ID", "Name", "Cost", "Number of remaining", ""};
+        String[] columnNames = {"ID", "Name", "Cost", "Кemaining", ""};
         table = new JTable(data, columnNames);
 
         ButtonColumn button = new ButtonColumn(table, action, 4);
-        //table.add(button);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setPreferredScrollableViewportSize(new Dimension(450, 110));
 
@@ -100,12 +144,9 @@ public class Application extends JFrame {
         currentBalance = new JTextField(8);
         currentBalance.setText(String.valueOf(shop.getCurrentUser().getBalance()));
 
-        frame.getContentPane().add(table);
+        frame.getContentPane().add(scrollPane);
         frame.getContentPane().add(balance);
         frame.getContentPane().add(currentBalance);
-
-        //frame.getContentPane().add(button);
-        frame.setVisible(true);
     }
 
     public static void main(String[] args) {

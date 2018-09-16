@@ -23,6 +23,10 @@ public class User {
         this.balance = balance;
     }
 
+    public String getSurname() {
+        return surname;
+    }
+
     public String getName() {
         return name;
 

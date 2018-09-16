@@ -35,6 +35,26 @@ public class Shop {
         this.currentUser = currentUser;
     }
 
+    public boolean buyItem (int itemNumber)
+    {
+        int balance = this.getCurrentUser().getBalance();
+        int itemCost = this.getItems().get(itemNumber).getPrice();
+        int remaining = this.getItems().get(itemNumber).getRemaining();
+
+        if(balance >= itemCost)
+            if(remaining > 0) {
+                this.getItems().get(itemNumber).setRemaining(remaining - 1);
+                this.getCurrentUser().setBalance(balance - itemCost);
+                return true;
+            }
+            else {
+                return false;
+            }
+        else {
+            return false;
+        }
+    }
+
     public void loadFromJson(String fileName){
         try {
             FileReader fileReader = new FileReader(fileName);

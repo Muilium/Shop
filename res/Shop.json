@@ -4,6 +4,16 @@
       "name": "Sanya",
       "surname": "Sovetskiy",
       "balance": 5400
+    },
+    {
+      "name": "Bold",
+      "surname": "FromBrazzers",
+      "balance": 100000
+    },
+    {
+      "name": "Billy",
+      "surname": "Herrington",
+      "balance": 15000
     }
   ],
   "items": [
@@ -30,6 +40,18 @@
       "id": "ID84023",
       "price": 1199,
       "remaining": 3
+    },
+    {
+      "name": "Cucumber",
+      "id": "ID84059",
+      "price": 315,
+      "remaining": 18
+    },
+    {
+      "name": "Watermelon",
+      "id": "ID84033",
+      "price": 500,
+      "remaining": 7
     },
     {
       "name": "Eggs",
