@@ -1,5 +1,6 @@
 package com.company;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -8,7 +9,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /** Магазин со списками предметов и покупателей
  *
@@ -16,37 +16,25 @@ import java.util.Scanner;
 public class Shop {
 
     private String fileName;
-    private User currentUser;
     private ArrayList<User> users = new ArrayList<>();
     private ArrayList<Item> items = new ArrayList<>();
 
-    public User getCurrentUser() {
-        return currentUser;
-    }
-
-    public ArrayList<User> getUsers() {
-        return users;
-    }
-
-    public ArrayList<Item> getItems() {
-        return items;
-    }
-
-    public void setCurrentUser(User currentUser) {
-        this.currentUser = currentUser;
-    }
-
-    public boolean buyItem (int itemNumber)
+    public Shop(String jsonFile)
     {
-        int balance = this.getCurrentUser().getBalance();
-        int itemCost = this.getItems().get(itemNumber).getPrice();
-        int remaining = this.getItems().get(itemNumber).getRemaining();
+        this.load(jsonFile);
+    }
+
+    public boolean buyItem(User user, int itemNumber)
+    {
+        int balance = user.getBalance();
+        int itemCost = items.get(itemNumber).getPrice();
+        int remaining = items.get(itemNumber).getRemaining();
 
         if(balance >= itemCost)
             if(remaining > 0) {
-                this.getCurrentUser().itemBought(this.getItems().get(itemNumber));
-                this.getItems().get(itemNumber).setRemaining(remaining - 1);
-                this.getCurrentUser().setBalance(balance - itemCost);
+                user.itemBought(items.get(itemNumber));
+                items.get(itemNumber).setRemaining(remaining - 1);
+                user.setBalance(balance - itemCost);
                 return true;
             }
             else {
@@ -57,7 +45,25 @@ public class Shop {
         }
     }
 
-    public void loadFromJson(String fileName)
+    /** Пытаемся залогиниться
+     * @param name имя юзера
+     * @param surname фамилия юзера
+     * @return null если не получилось, иначе юзер под которым залогинились
+     */
+    public User login(String name, String surname)
+    {
+        for(User user : users)
+        {
+            if (name.equals(user.getName()) && surname.equals(user.getSurname()))
+            {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    /** Грузим данные магазина из json-файла */
+    public void load(String fileName)
     {
         try {
             FileReader fileReader = new FileReader(fileName);
@@ -72,8 +78,9 @@ public class Shop {
             JSONArray users = obj.getJSONArray("users");
             JSONArray items = obj.getJSONArray("items");
 
-            for(int i = 0; i < users.length(); i++)
+            for(int i = 0; i < users.length(); i++) // TODO сделать чтение красиво(не падаем если нет какого-либо поля
             {
+                // loadHistrory(dsfk);
                 JSONArray history = users.getJSONObject(i).getJSONArray("history");
                 String name = users.getJSONObject(i).getString("name");
                 String surname = users.getJSONObject(i).getString("surname");
@@ -103,18 +110,18 @@ public class Shop {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (JSONException e)
+        {
+            System.out.printf("Error while loading user: %s", e.getMessage());
         }
 
         this.fileName = fileName;
     }
-    public void writeInJson(ArrayList<User> usersArray, ArrayList<Item> itemsArray)
+    public void save(ArrayList<User> usersArray, ArrayList<Item> itemsArray)
     {
         JSONObject obj = new JSONObject();
         JSONArray users = new JSONArray();
         JSONArray items = new JSONArray();
-        JSONObject name = new JSONObject();
-        JSONObject surname = new JSONObject();
-        JSONObject balance = new JSONObject();
 
         for(int i=0;i<usersArray.size();i++) {
             JSONArray history = new JSONArray();
@@ -122,7 +129,7 @@ public class Shop {
             user.put("name", usersArray.get(i).getName());
             user.put("surname", usersArray.get(i).getSurname());
             user.put("balance", usersArray.get(i).getBalance());
-            for(int j=0;j<usersArray.get(i).itemsBought.size();j++) {
+            for(int j=0;j<usersArray.get(i).getItemsBought().size();j++) {
                 JSONObject item = new JSONObject();
                 item.put("name", usersArray.get(i).getItemsBought().get(j).getName());
                 item.put("id", usersArray.get(i).getItemsBought().get(j).getId());
@@ -145,7 +152,7 @@ public class Shop {
         }
         obj.put("users", users);
         obj.put("items", items);
-        try (FileWriter file = new FileWriter("Shop.json")) {
+        try (FileWriter file = new FileWriter(fileName)) {
 
             file.write(obj.toString());
             file.flush();
@@ -153,5 +160,13 @@ public class Shop {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public ArrayList<User> getUsers() {
+        return users;
+    }
+
+    public ArrayList<Item> getItems() {
+        return items;
     }
 }

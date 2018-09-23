@@ -9,7 +9,7 @@ public class User {
     private String name;
     private String surname;
     private int balance;
-    ArrayList<Item> itemsBought = new ArrayList<>();
+    private ArrayList<Item> itemsBought = new ArrayList<>();
     public User(String name, String surname, int balance, ArrayList<Item> itemList)
     {
         this.name = name;
