@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -43,6 +44,7 @@ public class Shop {
 
         if(balance >= itemCost)
             if(remaining > 0) {
+                this.getCurrentUser().itemBought(this.getItems().get(itemNumber));
                 this.getItems().get(itemNumber).setRemaining(remaining - 1);
                 this.getCurrentUser().setBalance(balance - itemCost);
                 return true;
@@ -55,7 +57,8 @@ public class Shop {
         }
     }
 
-    public void loadFromJson(String fileName){
+    public void loadFromJson(String fileName)
+    {
         try {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferReader = new BufferedReader(fileReader);
@@ -68,12 +71,23 @@ public class Shop {
             JSONObject obj = new JSONObject(fullFile);
             JSONArray users = obj.getJSONArray("users");
             JSONArray items = obj.getJSONArray("items");
+
             for(int i = 0; i < users.length(); i++)
             {
+                JSONArray history = users.getJSONObject(i).getJSONArray("history");
                 String name = users.getJSONObject(i).getString("name");
                 String surname = users.getJSONObject(i).getString("surname");
                 int balance = users.getJSONObject(i).getInt("balance");
-                this.users.add(new User(name, surname, balance));
+                ArrayList<Item> itemList = new ArrayList<>();
+                for(int j=0;j<history.length();j++)
+                {
+                    String itemName = history.getJSONObject(j).getString("name");
+                    String itemId = history.getJSONObject(j).getString("id");
+                    int itemCost = history.getJSONObject(j).getInt("price");
+                    int itemAmount = history.getJSONObject(j).getInt("amount");
+                    itemList.add(new Item(itemName, itemId, itemCost, itemAmount));
+                }
+                this.users.add(new User(name, surname, balance, itemList));
             }
 
             for(int i = 0; i < items.length(); i++)
@@ -92,5 +106,52 @@ public class Shop {
         }
 
         this.fileName = fileName;
+    }
+    public void writeInJson(ArrayList<User> usersArray, ArrayList<Item> itemsArray)
+    {
+        JSONObject obj = new JSONObject();
+        JSONArray users = new JSONArray();
+        JSONArray items = new JSONArray();
+        JSONObject name = new JSONObject();
+        JSONObject surname = new JSONObject();
+        JSONObject balance = new JSONObject();
+
+        for(int i=0;i<usersArray.size();i++) {
+            JSONArray history = new JSONArray();
+            JSONObject user = new JSONObject();
+            user.put("name", usersArray.get(i).getName());
+            user.put("surname", usersArray.get(i).getSurname());
+            user.put("balance", usersArray.get(i).getBalance());
+            for(int j=0;j<usersArray.get(i).itemsBought.size();j++) {
+                JSONObject item = new JSONObject();
+                item.put("name", usersArray.get(i).getItemsBought().get(j).getName());
+                item.put("id", usersArray.get(i).getItemsBought().get(j).getId());
+                item.put("price", usersArray.get(i).getItemsBought().get(j).getPrice());
+                item.put("amount", usersArray.get(i).getItemsBought().get(j).getRemaining());
+                history.put(item);
+            }
+            user.put("history", history);
+            users.put(user);
+        }
+
+        for(int i=0;i<itemsArray.size();i++)
+        {
+            JSONObject item = new JSONObject();
+            item.put("name", itemsArray.get(i).getName());
+            item.put("id", itemsArray.get(i).getId());
+            item.put("remaining", itemsArray.get(i).getRemaining());
+            item.put("price", itemsArray.get(i).getPrice());
+            items.put(item);
+        }
+        obj.put("users", users);
+        obj.put("items", items);
+        try (FileWriter file = new FileWriter("Shop.json")) {
+
+            file.write(obj.toString());
+            file.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

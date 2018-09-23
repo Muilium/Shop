@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
-//import java.util.Scanner;
+
 
 public class Application extends JFrame {
 
@@ -75,6 +75,7 @@ public class Application extends JFrame {
                     else
                         JOptionPane.showMessageDialog(null, "Out of items!");
                 }
+                shop.writeInJson(shop.getUsers(), shop.getItems());
             }
         };
 
@@ -132,8 +133,33 @@ public class Application extends JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(false);
 
+        JButton historyButton = new JButton("History");
+        historyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object[][] dataHistory = new Object[shop.getCurrentUser().getItemsBought().size()][4];
+                String[] columnNamesHistory = {"ID", "Name", "Cost", "Amount"};
+                for(int i=0;i<shop.getCurrentUser().getItemsBought().size();i++)
+                {
+                    dataHistory[i][0] = shop.getCurrentUser().itemsBought.get(i).getName();
+                    dataHistory[i][1] = shop.getCurrentUser().itemsBought.get(i).getId();
+                    dataHistory[i][2] = shop.getCurrentUser().itemsBought.get(i).getPrice();
+                    dataHistory[i][3] = shop.getCurrentUser().itemsBought.get(i).getRemaining();
+                }
 
-        String[] columnNames = {"ID", "Name", "Cost", "Кemaining", ""};
+                JTable itemsBought = new JTable(dataHistory, columnNamesHistory);
+                JFrame history = new JFrame("History");
+                history.getContentPane().setLayout(new FlowLayout());
+                history.setSize(460, 300);
+                history.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                history.add(itemsBought);
+                JScrollPane scrollPane = new JScrollPane(itemsBought);
+                history.getContentPane().add(scrollPane);
+                history.setVisible(true);
+            }
+        });
+
+        String[] columnNames = {"ID", "Name", "Cost", "Remaining", ""};
         table = new JTable(data, columnNames);
 
         ButtonColumn button = new ButtonColumn(table, action, 4);
@@ -145,8 +171,13 @@ public class Application extends JFrame {
         currentBalance.setText(String.valueOf(shop.getCurrentUser().getBalance()));
 
         frame.getContentPane().add(scrollPane);
+        frame.getContentPane().add(historyButton);
         frame.getContentPane().add(balance);
         frame.getContentPane().add(currentBalance);
+
+
+
+
     }
 
     public static void main(String[] args) {
