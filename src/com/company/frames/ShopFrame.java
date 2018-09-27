@@ -10,14 +10,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-
+/** Основное окно магазина со списком доступных предметов, их покупкой и текущим балансом,
+ * открывается после входа в аккаунт в окне логина
+ * table           таблица со списком предметов и кнопками покупки
+ * currentbalance  текущий баланс залогиненного юзера
+ * shop            магазин со всей информацией о юзерах и предметах
+ * currentUser     залогиненный юзер
+ */
 public class ShopFrame extends JFrame
 {
-    /** Таблица в которой расположены остальные ui элементы */
     private JTable table;
-
     private JTextField currentBalance;
-
     private Shop shop;
     private User currentUser;
 
@@ -26,9 +29,9 @@ public class ShopFrame extends JFrame
         this.shop = shop;
         this.currentUser = user;
         this.getContentPane().setLayout(new FlowLayout());
-        this.setSize(500, 200);
+        this.setSize(500, 220);
+        setLocation(250, 150);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.setVisible(false);
 
         Object[][] data = new Object[shop.getItems().size()][5];
         for(int i = 0; i < shop.getItems().size(); i++)
@@ -43,14 +46,18 @@ public class ShopFrame extends JFrame
         String[] columnNames = {"ID", "Name", "Cost", "Remaining", ""};
         table = new JTable(data, columnNames);
 
+        /** Создание столбца с кнопками для покупки
+         * с помощью кастомного рендера */
         ButtonColumn button = new ButtonColumn(table, buyButtonAction, 4);
+
         JScrollPane scrollPane = new JScrollPane(table);
-        table.setPreferredScrollableViewportSize(new Dimension(450, 110));
+        table.setPreferredScrollableViewportSize(new Dimension(450, 120));
 
         JLabel balance = new JLabel("Balance: ");
         currentBalance = new JTextField(8);
         currentBalance.setText(String.valueOf(user.getBalance()));
 
+        /** Кнопка, открывающая фрейм с историей покупок */
         JButton historyButton = new JButton("History");
         historyButton.addActionListener(new ActionListener() {
             @Override
@@ -95,24 +102,19 @@ public class ShopFrame extends JFrame
 
         }
 
+        /** пытаемся купить предмет */
         @Override
         public void actionPerformed(ActionEvent e) {
+            /** получаем номер ряда (и номер предмета заодно) в котором была нажата кнопка*/
             int row = Integer.valueOf(e.getActionCommand());
-            int balance = currentUser.getBalance();
-            int itemCost = shop.getItems().get(row).getPrice();
+            /** выводим сообщение о результате покупки в отдельное окошко*/
+            JOptionPane.showMessageDialog(null, shop.buyItem(currentUser, row));
+
+            /** обновляем предмет в таблице */
             int remaining = shop.getItems().get(row).getRemaining();
-            if(shop.buyItem(currentUser, row))
-            {
-                table.getModel().setValueAt(remaining - 1, row , 3);
-                currentBalance.setText(String.valueOf(balance - itemCost));
-            }
-            else {
-                if(balance < itemCost) // TODO перенести эту логику в Shop(т. е. shop должен возвращать сообщение о результате)
-                    JOptionPane.showMessageDialog(null, "Not enough money!");
-                else
-                    JOptionPane.showMessageDialog(null, "Out of items!");
-            }
-            shop.save(shop.getUsers(), shop.getItems()); // toDO сохранение должно происходить внутри магазина
+            int balance = currentUser.getBalance();
+            table.getModel().setValueAt(remaining, row , 3);
+            currentBalance.setText(String.valueOf(balance));
         }
     };
 }

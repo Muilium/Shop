@@ -5,15 +5,16 @@ import com.company.User;
 
 import javax.swing.*;
 import java.awt.*;
-
+/** окно с историей покупок пользователя*/
 public class HistoryFrame extends JFrame
 {
     public HistoryFrame(User user)
     {
         super("History");
         getContentPane().setLayout(new FlowLayout());
-        setSize(460, 300);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setSize(480, 320);
+        setLocation(750, 150);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         String[] columnNamesHistory = {"ID", "Name", "Cost", "Amount"};
         Object[][] dataHistory = new Object[user.getItemsBought().size()][columnNamesHistory.length];
@@ -28,9 +29,10 @@ public class HistoryFrame extends JFrame
             i++;
         }
 
+        /** таблица со списком купленных предметов */
         JTable itemsBought = new JTable(dataHistory, columnNamesHistory);
         JScrollPane scrollPane = new JScrollPane(itemsBought);
-
+        itemsBought.setPreferredScrollableViewportSize(new Dimension(450, 250));
         getContentPane().add(scrollPane);
     }
 }

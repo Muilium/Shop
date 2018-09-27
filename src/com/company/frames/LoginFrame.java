@@ -8,23 +8,26 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+/** Окно логина, появляется при запуске приложения
+ * nameField поле для ввода имени пользователя
+ * surnameField поле для ввода фамилии пользователя
+ */
 public class LoginFrame extends JFrame
 {
-    /** Поле для ввода имени */
     private JTextField nameField;
-    /** Поле для ввода фамилии */
     private JTextField surnameField;
 
     public LoginFrame(Application app, Shop shop)
     {
         super("Log in");
 
+        /** Устанавливает основные параметры окна */
         getContentPane().setLayout(new FlowLayout());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(200, 150);
-        setLocation(400, 400);
+        setLocation(600, 300);
 
+        /** Создание текстовых полей и полей для ввода*/
         JLabel name = new JLabel("Name:       ");
         JLabel surname = new JLabel("Surname: ");
         nameField = new JTextField(10);
@@ -40,7 +43,11 @@ public class LoginFrame extends JFrame
         setVisible(true);
     }
 
-    /** */
+    /** Создает кнопку входа в аккаунт, при нажатии
+     * магазин ищет введенного пользователя среди списка пользователей,
+     * если находит то создается основное окно магазина и
+     * закрывается окно логина, иначе выводит сообщение об ошибке
+     */
     private JButton createLoginButton(Application app, Shop shop)
     {
         JButton logIn = new JButton("Log In");
@@ -56,8 +63,8 @@ public class LoginFrame extends JFrame
                     JOptionPane.showMessageDialog(null, "User is not found!");
                     return;
                 }
-
                 app.openFrame(new ShopFrame(app, shop, user));
+                dispose();
             }
         });
         return logIn;

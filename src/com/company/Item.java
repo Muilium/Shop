@@ -1,7 +1,10 @@
 package com.company;
 
 /** Предмет в магазине
- *
+ *   name        название товара
+ *   id          код товара
+ *   price       цена товара
+ *   remaining   количество оставшихся единиц товара
  */
 public class Item {
     private String name;

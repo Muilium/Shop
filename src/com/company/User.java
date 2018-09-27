@@ -3,7 +3,10 @@ package com.company;
 import java.util.ArrayList;
 
 /** Аккаунт пользователя
- *
+ *    name         имя пользователя
+ *    surname      фамилия пользователя
+ *    balance      текущий баланс
+ *    itemBought   список купленных предметов (история покупок)
  */
 public class User {
     private String name;
@@ -37,6 +40,10 @@ public class User {
     public ArrayList<Item> getItemsBought() {
         return itemsBought;
     }
+
+    /** добавление купленного предмета в историю покупок пользователя
+     * @param item купленынй предмет
+     */
 
     public void itemBought(Item item)
         {

@@ -3,6 +3,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -11,7 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /** Магазин со списками предметов и покупателей
- *
+ *   fileName   имя json-файла из которого будет считываться информация
+ *   users      список аккаунтов юзеров
+ *   items      список предметов в магазине
  */
 public class Shop {
 
@@ -24,7 +27,13 @@ public class Shop {
         this.load(jsonFile);
     }
 
-    public boolean buyItem(User user, int itemNumber)
+    /** Покупка предмета в магазине
+     * @param user пользователь купивший предмет (залогиненный на момент покупки)
+     * @param itemNumber номер предмета в списке предметов
+     * @return string сообщение о результате покупки
+     * */
+
+    public String buyItem(User user, int itemNumber)
     {
         int balance = user.getBalance();
         int itemCost = items.get(itemNumber).getPrice();
@@ -35,13 +44,14 @@ public class Shop {
                 user.itemBought(items.get(itemNumber));
                 items.get(itemNumber).setRemaining(remaining - 1);
                 user.setBalance(balance - itemCost);
-                return true;
+                this.save(this.getUsers(), this.getItems());
+                return "Purchase completed!";
             }
             else {
-                return false;
+                return "Out of items!";
             }
         else {
-            return false;
+            return "Not enough money!";
         }
     }
 
@@ -62,7 +72,9 @@ public class Shop {
         return null;
     }
 
-    /** Грузим данные магазина из json-файла */
+    /** грузим данные магазина из json-файла
+     * @param fileName имя json-файла
+     */
     public void load(String fileName)
     {
         try {
@@ -78,22 +90,12 @@ public class Shop {
             JSONArray users = obj.getJSONArray("users");
             JSONArray items = obj.getJSONArray("items");
 
-            for(int i = 0; i < users.length(); i++) // TODO сделать чтение красиво(не падаем если нет какого-либо поля
+            for(int i = 0; i < users.length(); i++)
             {
-                // loadHistrory(dsfk);
-                JSONArray history = users.getJSONObject(i).getJSONArray("history");
                 String name = users.getJSONObject(i).getString("name");
                 String surname = users.getJSONObject(i).getString("surname");
                 int balance = users.getJSONObject(i).getInt("balance");
-                ArrayList<Item> itemList = new ArrayList<>();
-                for(int j=0;j<history.length();j++)
-                {
-                    String itemName = history.getJSONObject(j).getString("name");
-                    String itemId = history.getJSONObject(j).getString("id");
-                    int itemCost = history.getJSONObject(j).getInt("price");
-                    int itemAmount = history.getJSONObject(j).getInt("amount");
-                    itemList.add(new Item(itemName, itemId, itemCost, itemAmount));
-                }
+                ArrayList<Item> itemList = loadHistory(users, i);
                 this.users.add(new User(name, surname, balance, itemList));
             }
 
@@ -117,6 +119,36 @@ public class Shop {
 
         this.fileName = fileName;
     }
+
+    /** отдельно считывание истории покупок, если возникнет ошибка прога
+     * продолжит работать
+     */
+    public ArrayList<Item> loadHistory(JSONArray users, int i)
+    {
+        ArrayList<Item> itemList = new ArrayList<>();
+        try {
+            JSONArray history = users.getJSONObject(i).getJSONArray("history");
+            for(int j=0;j<history.length();j++)
+            {
+                String itemName = history.getJSONObject(j).getString("name");
+                String itemId = history.getJSONObject(j).getString("id");
+                int itemCost = history.getJSONObject(j).getInt("price");
+                int itemAmount = history.getJSONObject(j).getInt("amount");
+                itemList.add(new Item(itemName, itemId, itemCost, itemAmount));
+            }
+        }
+        catch (JSONException e)
+        {
+            System.out.printf("Error while loading user history: %s", e.getMessage());
+        }
+        return itemList;
+    }
+
+    /** сохранение списка предметов и юзеров в json-файл
+     * @param usersArray список юзеров
+     * @param itemsArray список предметов
+     */
+
     public void save(ArrayList<User> usersArray, ArrayList<Item> itemsArray)
     {
         JSONObject obj = new JSONObject();
